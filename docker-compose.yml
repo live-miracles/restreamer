@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+    node-app:
+        build: .
+        container_name: node-app
+        ports:
+            - '3030:3030'
+        command: ['npm', 'start']
+        volumes:
+            - .:/app
+            - /app/node_modules
+        depends_on:
+            - mediamtx
+
+    mediamtx:
+        image: bluenviron/mediamtx:latest
+        container_name: mediamtx
+        ports:
+            - '1935:1935' # RTMP ingest
+            - '8554:8554' # RTSP
+            - '8888:8888' # HTTP interface / HLS
+            - '8889:8889' # WebRTC
+        volumes:
+            - ./mediamtx.yml:/mediamtx.yml:ro
+        command: ['mediamtx', '/mediamtx.yml']
+
+    rtmp-ingest:
+        image: jrottenberg/ffmpeg:4.4-alpine
+        container_name: rtmp-ingest
+        depends_on:
+            - mediamtx
+        command: >
+            -re -f lavfi -i testsrc=size=1280x720:rate=30
+            -f lavfi -i sine=frequency=1000
+            -c:v libx264 -preset veryfast -b:v 2500k
+            -c:a aac -b:a 128k
+            -f flv rtmp://mediamtx/live/stream

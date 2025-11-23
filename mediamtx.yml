@@ -1,0 +1,6 @@
+api: yes
+rtmp: yes
+
+paths:
+    all:
+        source: publisher

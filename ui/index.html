@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <body>
+    <h2>Active Streams</h2>
+    <div id="streams"></div>
+
+    <h3>Add Output</h3>
+    <input id="inputPath" placeholder="live/stream1" /><br />
+    <input id="dest" placeholder="rtmp://youtube.com/live2" /><br />
+    <button onclick="addOutput()">Add Output</button>
+
+    <script>
+      async function loadInputs() {
+        const r = await fetch('http://localhost:3030/inputs');
+        const data = await r.json();
+
+        const div = document.getElementById('streams');
+        div.innerHTML = '';
+        data.forEach((item) => {
+          div.innerHTML += `<div>${item.name}</div>`;
+        });
+      }
+
+      async function addOutput() {
+        const inputPath = document.getElementById('inputPath').value;
+        const dest = document.getElementById('dest').value;
+
+        await fetch('http://localhost:3030/outputs/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ inputPath, outputUrl: dest }),
+        });
+
+        alert('Output started!');
+      }
+
+      loadInputs();
+      setInterval(loadInputs, 2000);
+    </script>
+  </body>
+</html>
