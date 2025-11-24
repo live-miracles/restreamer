@@ -11,7 +11,7 @@
 
     <script>
       async function loadInputs() {
-        const r = await fetch('http://localhost:3030/inputs');
+        const r = await fetch('/inputs');
         const data = await r.json();
 
         const div = document.getElementById('streams');
@@ -25,7 +25,7 @@
         const inputPath = document.getElementById('inputPath').value;
         const dest = document.getElementById('dest').value;
 
-        await fetch('http://localhost:3030/outputs/add', {
+        await fetch('/outputs/add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ inputPath, outputUrl: dest }),

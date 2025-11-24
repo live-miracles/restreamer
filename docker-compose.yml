@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
     node-app:
         build: .
@@ -14,20 +12,21 @@ services:
             - mediamtx
 
     mediamtx:
-        image: bluenviron/mediamtx:latest
+        image: bluenviron/mediamtx:1
         container_name: mediamtx
         ports:
             - '1935:1935' # RTMP ingest
             - '8554:8554' # RTSP
             - '8888:8888' # HTTP interface / HLS
             - '8889:8889' # WebRTC
+            - '9997:9997' # API
         volumes:
             - ./mediamtx.yml:/mediamtx.yml:ro
-        command: ['mediamtx', '/mediamtx.yml']
 
     rtmp-ingest:
-        image: jrottenberg/ffmpeg:4.4-alpine
+        image: jrottenberg/ffmpeg:4.1-ubuntu
         container_name: rtmp-ingest
+        restart: unless-stopped
         depends_on:
             - mediamtx
         command: >
@@ -35,4 +34,11 @@ services:
             -f lavfi -i sine=frequency=1000
             -c:v libx264 -preset veryfast -b:v 2500k
             -c:a aac -b:a 128k
-            -f flv rtmp://mediamtx/live/stream
+            -f flv rtmp://mediamtx:1935/mystream
+        # entrypoint: >
+        #   sh -c "
+        #   ffmpeg -re -stream_loop -1 -i https://example.com/video.mp4
+        #   -c:v libx264 -preset veryfast -b:v 2500k
+        #   -c:a aac -b:a 128k -ac 2
+        #   -f flv rtmp://your-rtmp-server/live/streamkey
+        #   "

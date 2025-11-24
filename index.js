@@ -10,10 +10,11 @@ let jobs = {}; // keep FFmpeg processes
 // List active inputs (ask MediaMTX)
 app.get('/inputs', async (req, res) => {
     try {
-        const resp = await fetch('http://localhost:9997/v1/paths/list');
+        const resp = await fetch('http://mediamtx:9997/v3/paths/list');
         const data = await resp.json();
         res.json(data.items);
     } catch (err) {
+        console.log('Error fetching /inputs', err);
         res.status(500).json({ error: err.toString() });
     }
 });
@@ -22,7 +23,7 @@ app.get('/inputs', async (req, res) => {
 app.post('/outputs/add', (req, res) => {
     const { inputPath, outputUrl } = req.body;
 
-    const inputUrl = `rtmp://localhost/${inputPath}`;
+    const inputUrl = `rtmp://mediamtx:9997/${inputPath}`;
 
     const cmd = spawn('ffmpeg', ['-i', inputUrl, '-c', 'copy', '-f', 'flv', outputUrl]);
 
